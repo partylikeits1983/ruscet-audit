@@ -1,41 +1,22 @@
-# Unauthorized access in vault-pricefeed `update_price()`
+# Missing access control in set_latest_answer() function
+
+## Add access control modifier to set_latest_answer() function
 
 Severity: High
 
-Type: Unauthorized access
+Type: Unauthorized Access
 
-The vault-pricefeed contract allows any arbitrary caller to set the price of an asset. In the comments, it says this function will be removed in the future, however, this function allows an attacker to arbitrarily set the oracle price that the vault reads from. 
+The bug in the set_latest_answer function occurs because there is no access control enforcing that only authorized users can set the price. As a result, anyone can call this function and change the return value of the latest_answer() function.
 
-Source: https://github.com/burralabs/ruscet-contracts/blob/93c58b12d72429d1a680429bcbf72c4246a70502/contracts/core/vault-pricefeed/src/main.sw#L258
+The commented-out line of code:
 
-[Github URL]
-```rust
-// this is just a helper method to update the price of an asset directly from VaultPricefeed
-// this will be removed in the future when Pyth prices are supported on-chain
-#[storage(read)]
-fn update_price(
-    asset: AssetId,
-    new_price: u256
-) {
-    let pricefeed_addr = storage.pricefeeds.get(asset).try_read().unwrap_or(ZERO_CONTRACT);
-    require(
-        pricefeed_addr.non_zero(),
-        Error::VaultPriceFeedInvalidPriceFeedToUpdate
-    );
-
-    let pricefeed = abi(Pricefeed, pricefeed_addr.into());
-    pricefeed.set_latest_answer(new_price);
-}
+https://github.com/burralabs/ruscet-contracts/blob/93c58b12d72429d1a680429bcbf72c4246a70502/contracts/pricefeed/src/main.sw#L79
+```
+// require(get_sender() == storage.gov.read(), Error::PricefeedForbidden);
 ```
 
-Attack scenario:
+is meant to prevent unauthorized users from calling the function by checking if the caller (get_sender()) matches the stored governance address storage.gov.read().
 
-1) A malicious user calls the `update_price()` function with an `asset` and a `new_price` value. The call updates the price value in the pricefeed contract. 
-2) In subsequent calls or in a multicall, the malicious user can exploit the ability to set the price in the pricefeed contract in other parts of the code base.
+This may have been commented out for testing purposes, however, it is best to fix this issue and update any tests that may be affected by this change.
 
-### Recommendation 
-
-Add the `_only_gov()` function modifier to the `update_price()` function. Or complete the integration of this function with the Pyth pricefeed before deploying.
-
-Additionally, consider adding a test of this function to the `/test` directory. 
-
+Since this line is commented out, anyone can call the function and set the price, which exposes the system to attacks like price manipulation or false data being injected.

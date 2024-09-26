@@ -1,8 +1,14 @@
-# Insufficient Documentation
+# Uninitialized on deploy
 
 Severity: Low
 
-Type: Documentation
+Type: Contract Initialization
 
-Currently there is an insufficient amount of documentation of the codebase which makes it difficult for developers and users to quickly understand the architecture and functionality of the smart contracts.
+All `initialize()` functions present in the codebase allow any caller to initialize the contract.
 
+### Recommendation:
+
+To prevent unwanted initialization, or the possibility of the non-initialization of a contract, consider setting the address of the initializor in configurables.
+
+Configurable constants:
+https://docs.fuel.network/docs/sway/basics/constants/#configurable-constants

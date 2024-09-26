@@ -1,7 +1,11 @@
-# Low code coverage 
+# `write_max_rusd_amount()` function not used
 
-Severity: Low
+Severity: Informational
 
-Type: Code Coverage
+Type: Unused Function
 
-Not all functions and execution paths are tested in the `/tests` directory. Consider adding more tests, and basic fuzzing tests for functions that are responsible for the core business logic.
+Source: https://github.com/burralabs/ruscet-contracts/blob/93c58b12d72429d1a680429bcbf72c4246a70502/contracts/core/vault-storage/src/main.sw#L574
+
+### Recommendation
+
+Remove the function or add a test that tests this functionality.
