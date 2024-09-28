@@ -55,3 +55,20 @@ it("shows contract/utxo balance drift", async () => {
     }
 });
 ```
+
+### Bug scenario
+This bug can potentially lead to a situation where a user cannot call the transfer() function the RLP, RUSD, & Yield Asset.
+
+Alice sends 100 tokens to Bob via the transfer() method in the contract.
+Bob sends 100 tokens back to Alice via the Fuel UTXO asset transfer method.
+Alice calls the transfer() method trying to send assets to Charlie. This transaction will fail, because the sender_balance - amount computation in the contract will lead to underflow.
+Suggestion
+The suggestion is to remove the storage writes in the transfer() function as well as the get_balance() function from the RLP, RUSD, and yield-tracker contracts, however, this may require additional refactoring to track how other functionality is handled in the contracts.
+
+Affected contracts:
+
+1) https://github.com/burralabs/ruscet-contracts/blob/36668ffd579d0f666dcd8ab2530cc096d3bbb2f8/contracts/assets/rlp/src/main.sw#L218-#L246
+
+2) https://github.com/burralabs/ruscet-contracts/blob/36668ffd579d0f666dcd8ab2530cc096d3bbb2f8/contracts/assets/rusd/src/main.sw#L368#L416
+
+3) https://github.com/burralabs/ruscet-contracts/blob/36668ffd579d0f666dcd8ab2530cc096d3bbb2f8/contracts/assets/yield-asset/src/main.sw#L289-#L337
